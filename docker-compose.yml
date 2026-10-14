@@ -1,0 +1,12 @@
+services:
+  sdk:
+    build: .
+    working_dir: /workspace
+    volumes:
+      - .:/workspace
+      - gradle-cache:/gradle-home
+    entrypoint: ["sh", "gradlew"]
+    command: ["build", "--no-daemon"]
+
+volumes:
+  gradle-cache:

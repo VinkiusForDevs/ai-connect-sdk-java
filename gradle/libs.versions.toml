@@ -1,0 +1,24 @@
+[versions]
+jackson = "2.22.3"
+jspecify = "1.0.1"
+errorprone = "2.50.0"
+nullaway = "0.14.2"
+googleJavaFormat = "1.36.1"
+checkstyle = "14.3.0"
+jacoco = "0.8.15"
+junit = "6.1.3"
+assertj = "3.27.7"
+
+[libraries]
+jackson-databind = { module = "com.fasterxml.jackson.core:jackson-databind", version.ref = "jackson" }
+jspecify = { module = "org.jspecify:jspecify", version.ref = "jspecify" }
+errorprone-core = { module = "com.google.errorprone:error_prone_core", version.ref = "errorprone" }
+nullaway = { module = "com.uber.nullaway:nullaway", version.ref = "nullaway" }
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+junit-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+assertj = { module = "org.assertj:assertj-core", version.ref = "assertj" }
+
+[plugins]
+spotless = { id = "com.diffplug.spotless", version = "8.10.4" }
+errorprone = { id = "net.ltgt.errorprone", version = "5.1.1" }

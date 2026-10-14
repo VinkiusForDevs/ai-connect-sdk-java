@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    name: Build · Lint · Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate Gradle wrapper
+        uses: gradle/actions/wrapper-validation@v4
+
+      - name: Build
+        id: build
+        run: |
+          set -o pipefail
+          docker compose build
+          docker compose run --rm sdk 2>&1 | tee build-output.txt
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reports
+          path: |
+            build/reports/
+            build/test-results/
+
+      - name: Notify Discord
+        if: always()
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          if [ -z "$DISCORD_WEBHOOK_URL" ]; then
+            echo "No Discord webhook configured; skipping notification."
+            exit 0
+          fi
+          if [ "${{ steps.build.outcome }}" = "success" ]; then
+            STATUS="✅ Passed"
+            COLOR=3066993
+          else
+            STATUS="❌ Failed"
+            COLOR=15158332
+          fi
+          COMMIT_MSG=$(git log -1 --pretty=%s | head -c 100)
+          COMMIT_SHA=$(git rev-parse --short HEAD)
+          BRANCH="${GITHUB_REF_NAME}"
+          ACTOR="${GITHUB_ACTOR}"
+          RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          FAILED=$(grep -c 'FAILED' build-output.txt 2>/dev/null || echo 0)
+          PAYLOAD=$(cat <<EOF
+          {
+            "embeds": [{
+              "title": "$STATUS — connect-sdk-java CI",
+              "url": "$RUN_URL",
+              "color": $COLOR,
+              "fields": [
+                { "name": "Branch", "value": "\`$BRANCH\`", "inline": true },
+                { "name": "Commit", "value": "[\`$COMMIT_SHA\`](${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}) $COMMIT_MSG", "inline": false },
+                { "name": "Author", "value": "$ACTOR", "inline": true }
+              ],
+              "footer": { "text": "Docker Compose · eclipse-temurin:21 · ubuntu-latest" },
+              "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            }]
+          }
+          EOF
+          )
+          curl -s -H "Content-Type: application/json" -d "$PAYLOAD" "$DISCORD_WEBHOOK_URL"
