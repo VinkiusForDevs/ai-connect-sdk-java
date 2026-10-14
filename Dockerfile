@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21.0.12_8-jdk-noble@sha256:4d271cd5e0624598cf563342f47281b09cb364bc13acbbd7251f49f83470018d
+FROM eclipse-temurin:24.0.2_12-jdk-noble@sha256:dacac8e9a0df0d2bd24e702b4431132875c249930b70555ebd7ca285b5bee684
 
 ENV GRADLE_USER_HOME=/gradle-home \
     VINKIUS_SDK_BUILD=container
