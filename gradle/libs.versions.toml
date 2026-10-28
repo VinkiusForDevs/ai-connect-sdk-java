@@ -1,8 +1,8 @@
 [versions]
-jackson = "2.22.3"
+jackson = "2.22.4"
 jspecify = "1.0.1"
-errorprone = "2.50.0"
-nullaway = "0.14.2"
+errorprone = "2.51.0"
+nullaway = "0.14.3"
 googleJavaFormat = "1.36.1"
 checkstyle = "14.3.0"
 jacoco = "0.8.15"
